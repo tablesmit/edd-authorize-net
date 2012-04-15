@@ -132,24 +132,25 @@ function edda_authorize_cc_form() {
 	<fieldset>
 		<legend><?php _e('Credit Card Info', 'edd'); ?></legend>
 		<p>
-			<input type="text" autocomplete="off" name="card_name" class="card-name edd-input required" />
+			<input type="text" autocomplete="off" name="card_name" class="card-name edd-input required" placeholder="<?php _e('Card name', 'edda'); ?>" />
 			<label class="edd-label"><?php _e('Name on the Card', 'edd'); ?></label>
 		</p>
 		<p>
-			<input type="text" autocomplete="off" name="card_number" class="card-number edd-input required" />
+			<input type="text" autocomplete="off" name="card_number" class="card-number edd-input required" placeholder="<?php _e('Card number', 'edda'); ?>" />
 			<label class="edd-label"><?php _e('Card Number', 'edd'); ?></label>
 		</p>
 		<p>
-			<input type="text" size="4" autocomplete="off" name="card_cvc" class="card-cvc edd-input required" />
+			<input type="text" size="4" autocomplete="off" name="card_cvc" class="card-cvc edd-input required" placeholder="<?php _e('CVC', 'edda'); ?>" />
 			<label class="edd-label"><?php _e('CVC', 'edd'); ?></label>
 		</p>
 		<?php do_action('edd_before_authorize_cc_expiration'); ?>
 		<p class="card-expiration">
-			<input type="text" size="2" name="card_exp_month" class="card-expiry-month edd-input required"/>
+			<input type="text" size="2" name="card_exp_month" class="card-expiry-month edd-input required" placeholder="<?php _e('Month', 'edda'); ?>"/>
 			<span class="exp-divider"> / </span>
-			<input type="text" size="2" name="card_exp_year" class="card-expiry-year edd-input required"/>
+			<input type="text" size="2" name="card_exp_year" class="card-expiry-year edd-input required" placeholder="<?php _e('Year', 'edda'); ?>"/>
 			<label class="edd-label"><?php _e('Expiration (MM/YY)', 'edd'); ?></label>
 		</p>
+		<?php do_action('edd_after_authorize_cc_expiration'); ?>
 	</fieldset>
 	<?php do_action('edd_after_authorize_cc_fields'); ?>
 	<?php
