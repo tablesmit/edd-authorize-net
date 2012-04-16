@@ -68,7 +68,7 @@ function edda_process_payment($purchase_data) {
 			$payment_data = array( 
 				'price' => $purchase_data['price'], 
 				'date' => $purchase_data['date'], 
-				'user_email' => $purchase_data['post_data']['edd-email'],
+				'user_email' => $purchase_data['post_data']['edd_email'],
 				'purchase_key' => $purchase_data['purchase_key'],
 				'currency' => $edd_options['currency'],
 				'downloads' => $purchase_data['downloads'],
