@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Authorize.net Gateway
 Plugin URL: http://easydigitaldownloads.com/extension/authorize-net
 Description: Adds a payment gateway for Authorize.net
-Version: 1.0
+Version: 1.0.1
 Author: Pippin Williamson
 Author URI: http://pippinsplugins.com
 Contributors: mordauk
@@ -68,10 +68,11 @@ function edda_process_payment($purchase_data) {
 			$payment_data = array( 
 				'price' => $purchase_data['price'], 
 				'date' => $purchase_data['date'], 
-				'user_email' => $purchase_data['post_data']['edd_email'],
+				'user_email' => $purchase_data['post_data']['edd-email'],
 				'purchase_key' => $purchase_data['purchase_key'],
 				'currency' => $edd_options['currency'],
 				'downloads' => $purchase_data['downloads'],
+				'cart_details' => $purchase_data['cart_details'],
 				'user_info' => $purchase_data['user_info'],
 				'status' => 'pending'
 			);
@@ -132,25 +133,24 @@ function edda_authorize_cc_form() {
 	<fieldset>
 		<legend><?php _e('Credit Card Info', 'edd'); ?></legend>
 		<p>
-			<input type="text" autocomplete="off" name="card_name" class="card-name edd-input required" placeholder="<?php _e('Card name', 'edda'); ?>" />
+			<input type="text" autocomplete="off" name="card_name" class="card-name edd-input required" />
 			<label class="edd-label"><?php _e('Name on the Card', 'edd'); ?></label>
 		</p>
 		<p>
-			<input type="text" autocomplete="off" name="card_number" class="card-number edd-input required" placeholder="<?php _e('Card number', 'edda'); ?>" />
+			<input type="text" autocomplete="off" name="card_number" class="card-number edd-input required" />
 			<label class="edd-label"><?php _e('Card Number', 'edd'); ?></label>
 		</p>
 		<p>
-			<input type="text" size="4" autocomplete="off" name="card_cvc" class="card-cvc edd-input required" placeholder="<?php _e('CVC', 'edda'); ?>" />
+			<input type="text" size="4" autocomplete="off" name="card_cvc" class="card-cvc edd-input required" />
 			<label class="edd-label"><?php _e('CVC', 'edd'); ?></label>
 		</p>
 		<?php do_action('edd_before_authorize_cc_expiration'); ?>
 		<p class="card-expiration">
-			<input type="text" size="2" name="card_exp_month" class="card-expiry-month edd-input required" placeholder="<?php _e('Month', 'edda'); ?>"/>
+			<input type="text" size="2" name="card_exp_month" class="card-expiry-month edd-input required"/>
 			<span class="exp-divider"> / </span>
-			<input type="text" size="2" name="card_exp_year" class="card-expiry-year edd-input required" placeholder="<?php _e('Year', 'edda'); ?>"/>
+			<input type="text" size="2" name="card_exp_year" class="card-expiry-year edd-input required"/>
 			<label class="edd-label"><?php _e('Expiration (MM/YY)', 'edd'); ?></label>
 		</p>
-		<?php do_action('edd_after_authorize_cc_expiration'); ?>
 	</fieldset>
 	<?php do_action('edd_after_authorize_cc_fields'); ?>
 	<?php
