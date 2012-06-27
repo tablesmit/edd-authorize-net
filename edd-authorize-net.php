@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Authorize.net Gateway
 Plugin URL: http://easydigitaldownloads.com/extension/authorize-net
 Description: Adds a payment gateway for Authorize.net
-Version: 1.0.1
+Version: 1.0.2
 Author: Pippin Williamson
 Author URI: http://pippinsplugins.com
 Contributors: mordauk
@@ -68,7 +68,7 @@ function edda_process_payment($purchase_data) {
 			$payment_data = array( 
 				'price' => $purchase_data['price'], 
 				'date' => $purchase_data['date'], 
-				'user_email' => $purchase_data['post_data']['edd-email'],
+				'user_email' => $purchase_data['user_email'],
 				'purchase_key' => $purchase_data['purchase_key'],
 				'currency' => $edd_options['currency'],
 				'downloads' => $purchase_data['downloads'],
