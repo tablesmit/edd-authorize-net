@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Authorize.net Gateway
 Plugin URL: http://easydigitaldownloads.com/extension/authorize-net
 Description: Adds a payment gateway for Authorize.net
-Version: 1.0.3
+Version: 1.0.4
 Author: Pippin Williamson
 Author URI: http://pippinsplugins.com
 Contributors: mordauk
@@ -21,11 +21,6 @@ function edda_register_authorize_gateway($gateways) {
 	return $gateways;
 }
 add_filter('edd_payment_gateways', 'edda_register_authorize_gateway');
-
-function edda_authorize_remove_cc_form() {
-	// we only register the action so that the default CC form is not shown
-}
-add_action('edd_authorize_cc_form', 'edda_authorize_remove_cc_form');
 
 function edda_process_payment($purchase_data) {
 	global $edd_options;
@@ -57,28 +52,41 @@ function edda_process_payment($purchase_data) {
 		} else {
 			$transaction->setSandbox(false);
 		}
-		$transaction->amount = $purchase_data['price'];
-		$transaction->card_num = strip_tags(trim($_POST['card_number']));
-		$transaction->exp_date = strip_tags(trim($_POST['card_exp_month'])) . '/' . strip_tags(trim($_POST['card_exp_year']));
+		
+		$card_info = $purchase_data['card_info'];
 
-		$transaction->description = edd_get_purchase_summary($purchase_data);
-        $transaction->first_name = $purchase_data['user_info']['user_first'];
-        $transaction->last_name = $purchase_data['user_info']['user_last'];
+		$transaction->amount 		= $purchase_data['price'];
+		$transaction->card_num 		= strip_tags( trim( $card_info['card_number'] ) );
+		$transaction->exp_date 		= strip_tags( trim( $card_info['card_exp_month'] ) ) . '/' . strip_tags( trim( $card_info['card_exp_year'] ) );
+
+		$transaction->description 	= edd_get_purchase_summary( $purchase_data );
+        $transaction->first_name 	= $purchase_data['user_info']['first_name'];
+        $transaction->last_name 	= $purchase_data['user_info']['last_name'];
+
+        $transaction->address 		= $card_info['card_address'] . ' ' . $card_info['card_address_2'];
+        $transaction->city 			= $card_info['card_city'];
+        $transaction->country 		= $card_info['card_country'];
+        $transaction->state 		= $card_info['card_state'];
+        $transaction->zip 			= $card_info['card_zip'];
+        
+        $transaction->customer_ip 	= edd_get_ip();
+        $transaction->email 		= $purchase_data['user_email'];
+        $transaction->invoice_num 	= $purchase_data['purchase_key'];
 
 		$response = $transaction->authorizeAndCapture();
 
-		if ($response->approved) {
+		if ( $response->approved ) {
 		
 			$payment_data = array( 
-				'price' => $purchase_data['price'], 
-				'date' => $purchase_data['date'], 
-				'user_email' => $purchase_data['user_email'],
-				'purchase_key' => $purchase_data['purchase_key'],
-				'currency' => $edd_options['currency'],
-				'downloads' => $purchase_data['downloads'],
-				'cart_details' => $purchase_data['cart_details'],
-				'user_info' => $purchase_data['user_info'],
-				'status' => 'pending'
+				'price' 		=> $purchase_data['price'], 
+				'date' 			=> $purchase_data['date'], 
+				'user_email' 	=> $purchase_data['user_email'],
+				'purchase_key' 	=> $purchase_data['purchase_key'],
+				'currency' 		=> $edd_options['currency'],
+				'downloads' 	=> $purchase_data['downloads'],
+				'cart_details' 	=> $purchase_data['cart_details'],
+				'user_info' 	=> $purchase_data['user_info'],
+				'status' 		=> 'pending'
 			);
 		
 			$payment = edd_insert_payment($payment_data);
@@ -90,9 +98,11 @@ function edda_process_payment($purchase_data) {
 				edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
 			}
 		} else {
-			print_r( $response ); exit;
+
 			if(strpos($response->error_message, 'The credit card number is invalid') !== false) {
 				edd_set_error('invalid_card', __('Your card number is invalid', 'edd'));
+			} else {
+				wp_die( $response->error_message, __( 'Error' ) );
 			}
 			
 			edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
@@ -130,35 +140,3 @@ function edda_add_settings($settings) {
 	return array_merge($settings, $edda_settings);
 }
 add_filter('edd_settings_gateways', 'edda_add_settings');
-
-// setup a custom CC form for Stripe
-function edda_authorize_cc_form() {
-	ob_start(); ?>
-	<?php do_action('edd_before_authorize_cc_fields'); ?>
-	<fieldset>
-		<legend><?php _e('Credit Card Info', 'edd'); ?></legend>
-		<p>
-			<input type="text" autocomplete="off" name="card_name" class="card-name edd-input required" />
-			<label class="edd-label"><?php _e('Name on the Card', 'edd'); ?></label>
-		</p>
-		<p>
-			<input type="text" autocomplete="off" name="card_number" class="card-number edd-input required" />
-			<label class="edd-label"><?php _e('Card Number', 'edd'); ?></label>
-		</p>
-		<p>
-			<input type="text" size="4" autocomplete="off" name="card_cvc" class="card-cvc edd-input required" />
-			<label class="edd-label"><?php _e('CVC', 'edd'); ?></label>
-		</p>
-		<?php do_action('edd_before_authorize_cc_expiration'); ?>
-		<p class="card-expiration">
-			<input type="text" size="2" name="card_exp_month" class="card-expiry-month edd-input required"/>
-			<span class="exp-divider"> / </span>
-			<input type="text" size="2" name="card_exp_year" class="card-expiry-year edd-input required"/>
-			<label class="edd-label"><?php _e('Expiration (MM/YY)', 'edd'); ?></label>
-		</p>
-	</fieldset>
-	<?php do_action('edd_after_authorize_cc_fields'); ?>
-	<?php
-	echo ob_get_clean();
-}
-add_action('edd_authorize_cc_form', 'edda_authorize_cc_form');
