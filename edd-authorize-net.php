@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Authorize.net Gateway
 Plugin URL: http://easydigitaldownloads.com/extension/authorize-net
 Description: Adds a payment gateway for Authorize.net
-Version: 1.0.2
+Version: 1.0.3
 Author: Pippin Williamson
 Author URI: http://pippinsplugins.com
 Contributors: mordauk
@@ -61,6 +61,10 @@ function edda_process_payment($purchase_data) {
 		$transaction->card_num = strip_tags(trim($_POST['card_number']));
 		$transaction->exp_date = strip_tags(trim($_POST['card_exp_month'])) . '/' . strip_tags(trim($_POST['card_exp_year']));
 
+		$transaction->description = edd_get_purchase_summary($purchase_data);
+        $transaction->first_name = $purchase_data['user_info']['user_first'];
+        $transaction->last_name = $purchase_data['user_info']['user_last'];
+
 		$response = $transaction->authorizeAndCapture();
 
 		if ($response->approved) {
@@ -86,6 +90,7 @@ function edda_process_payment($purchase_data) {
 				edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
 			}
 		} else {
+			print_r( $response ); exit;
 			if(strpos($response->error_message, 'The credit card number is invalid') !== false) {
 				edd_set_error('invalid_card', __('Your card number is invalid', 'edd'));
 			}
