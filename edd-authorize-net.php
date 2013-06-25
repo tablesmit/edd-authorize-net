@@ -40,19 +40,19 @@ function edda_process_payment($purchase_data) {
 	if(!isset($_POST['card_cvc']) || $_POST['card_cvc'] == '' || strlen($_POST['card_cvc']) < 3) {
 		edd_set_error('empty_cvc', __('You must enter a valid CVC', 'edd'));
 	}
-	
+
 	$errors = edd_get_errors();
 	if(!$errors) {
-	
+
 		require_once(dirname(__FILE__) . '/includes/anet_php_sdk/AuthorizeNet.php');
-		
+
 		$transaction = new AuthorizeNetAIM($edd_options['edda_api_login'], $edd_options['edd_transaction_key']);
 		if(edd_is_test_mode()) {
 			$transaction->setSandbox(true);
 		} else {
 			$transaction->setSandbox(false);
 		}
-		
+
 		$card_info = $purchase_data['card_info'];
 
 		$transaction->amount 		= $purchase_data['price'];
@@ -68,7 +68,7 @@ function edda_process_payment($purchase_data) {
         $transaction->country 		= $card_info['card_country'];
         $transaction->state 		= $card_info['card_state'];
         $transaction->zip 			= $card_info['card_zip'];
-        
+
         $transaction->customer_ip 	= edd_get_ip();
         $transaction->email 		= $purchase_data['user_email'];
         $transaction->invoice_num 	= $purchase_data['purchase_key'];
@@ -76,10 +76,10 @@ function edda_process_payment($purchase_data) {
 		$response = $transaction->authorizeAndCapture();
 
 		if ( $response->approved ) {
-		
-			$payment_data = array( 
-				'price' 		=> $purchase_data['price'], 
-				'date' 			=> $purchase_data['date'], 
+
+			$payment_data = array(
+				'price' 		=> $purchase_data['price'],
+				'date' 			=> $purchase_data['date'],
 				'user_email' 	=> $purchase_data['user_email'],
 				'purchase_key' 	=> $purchase_data['purchase_key'],
 				'currency' 		=> $edd_options['currency'],
@@ -88,7 +88,7 @@ function edda_process_payment($purchase_data) {
 				'user_info' 	=> $purchase_data['user_info'],
 				'status' 		=> 'pending'
 			);
-		
+
 			$payment = edd_insert_payment($payment_data);
 			if($payment) {
 				edd_update_payment_status($payment, 'publish');
@@ -104,7 +104,7 @@ function edda_process_payment($purchase_data) {
 			} else {
 				wp_die( $response->error_message, __( 'Error' ) );
 			}
-			
+
 			edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
 		}
 	} else {
@@ -115,7 +115,7 @@ add_action('edd_gateway_authorize', 'edda_process_payment');
 
 // adds the settings to the Payment Gateways section
 function edda_add_settings($settings) {
-  
+
   $edda_settings = array(
 		array(
 			'id' => 'edda_settings',
@@ -136,7 +136,7 @@ function edda_add_settings($settings) {
 			'type' => 'text'
 		)
 	);
-	
+
 	return array_merge($settings, $edda_settings);
 }
 add_filter('edd_settings_gateways', 'edda_add_settings');
