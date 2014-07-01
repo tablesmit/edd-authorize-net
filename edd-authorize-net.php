@@ -74,40 +74,59 @@ function edda_process_payment($purchase_data) {
         $transaction->email 		= $purchase_data['user_email'];
         $transaction->invoice_num 	= $purchase_data['purchase_key'];
 
-		$response = $transaction->authorizeAndCapture();
+        try {
 
-		if ( $response->approved ) {
+			$response = $transaction->authorizeAndCapture();
 
-			$payment_data = array(
-				'price' 		=> $purchase_data['price'],
-				'date' 			=> $purchase_data['date'],
-				'user_email' 	=> $purchase_data['user_email'],
-				'purchase_key' 	=> $purchase_data['purchase_key'],
-				'currency' 		=> $edd_options['currency'],
-				'downloads' 	=> $purchase_data['downloads'],
-				'cart_details' 	=> $purchase_data['cart_details'],
-				'user_info' 	=> $purchase_data['user_info'],
-				'status' 		=> 'pending'
-			);
+			if ( $response->approved ) {
 
-			$payment = edd_insert_payment($payment_data);
-			if($payment) {
-				edd_update_payment_status($payment, 'publish');
-				edd_send_to_success_page();
+				$payment_data = array(
+					'price' 		=> $purchase_data['price'],
+					'date' 			=> $purchase_data['date'],
+					'user_email' 	=> $purchase_data['user_email'],
+					'purchase_key' 	=> $purchase_data['purchase_key'],
+					'currency' 		=> edd_get_currency(),
+					'downloads' 	=> $purchase_data['downloads'],
+					'cart_details' 	=> $purchase_data['cart_details'],
+					'user_info' 	=> $purchase_data['user_info'],
+					'status' 		=> 'pending'
+				);
+
+				$payment = edd_insert_payment($payment_data);
+				if( $payment ) {
+					edd_update_payment_status( $payment, 'publish' );
+					edd_send_to_success_page();
+				} else {
+					edd_set_error('authorize_error', __('Error: your payment could not be recorded. Please try again', 'edda'));
+					edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
+				}
 			} else {
-				edd_set_error('authorize_error', __('Error: your payment could not be recorded. Please try again', 'edda'));
+
+				//echo '<pre>'; print_r( $response ); echo '</pre>'; exit;
+
+				if( isset( $response->response_reason_text ) ) {
+					$error = $response->response_reason_text;
+				} elseif( isset( $response->error_message ) ) {
+					$error = $response->error_message;
+				} else {
+					$error = '';
+				}
+
+				if( strpos( strtolower( $error ), 'the credit card number is invalid' ) !== false ) {
+					edd_set_error( 'invalid_card', __( 'Your card number is invalid', 'edda' ) );
+				} elseif( strpos( strtolower( $error ), 'this transaction has been declined' ) !== false ) {
+					edd_set_error( 'invalid_card', __( 'Your card has been declined', 'edda' ) );
+				} else {
+					edd_set_error( 'api_error', sprintf( __( 'An error occurred. Error data: %s', 'edda' ), print_r( $response, true ) ) );
+				}
+
 				edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
 			}
-		} else {
-
-			if(strpos($response->error_message, 'The credit card number is invalid') !== false) {
-				edd_set_error('invalid_card', __('Your card number is invalid', 'edd'));
-			} else {
-				wp_die( $response->error_message, __( 'Error' ) );
-			}
-
-			edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
+		} catch ( AuthorizeNetException $e ) {
+			edd_set_error( 'request_error', $e->getMessage() );
+			edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
 		}
+
 	} else {
 		edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
 	}
