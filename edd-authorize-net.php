@@ -14,6 +14,10 @@ if(!defined('EDDA_PLUGIN_DIR')) {
 	define('EDDA_PLUGIN_DIR', dirname(__FILE__));
 }
 
+if( class_exists( 'EDD_License' ) && is_admin() ) {
+	$license = new EDD_License( __FILE__, 'Authorize.net Payment Gateway', '1.0.5', 'Pippin Williamson' );
+}
+
 // registers the gateway
 function edda_register_authorize_gateway($gateways) {
 	// Format: ID => Name
