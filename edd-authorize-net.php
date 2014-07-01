@@ -116,6 +116,10 @@ function edda_process_payment($purchase_data) {
 					edd_set_error( 'invalid_card', __( 'Your card number is invalid', 'edda' ) );
 				} elseif( strpos( strtolower( $error ), 'this transaction has been declined' ) !== false ) {
 					edd_set_error( 'invalid_card', __( 'Your card has been declined', 'edda' ) );
+				} elseif( isset( $response->response_reason_text ) ) {
+					edd_set_error( 'api_error', $response->response_reason_text );
+				} elseif( isset( $response->error_message ) ) {
+					edd_set_error( 'api_error', $response->error_message );
 				} else {
 					edd_set_error( 'api_error', sprintf( __( 'An error occurred. Error data: %s', 'edda' ), print_r( $response, true ) ) );
 				}
