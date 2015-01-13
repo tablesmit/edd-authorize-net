@@ -57,7 +57,18 @@ function edda_process_payment($purchase_data) {
 			$transaction->setSandbox(false);
 		}
 
-		$card_info = $purchase_data['card_info'];
+		$card_info  = $purchase_data['card_info'];
+		$card_names = explode( ' ', $card_info['card_name'] );
+		$first_name = isset( $card_names[0] ) ? $card_names[0] : $purchase_data['user_info']['first_name'];
+		if( ! empty( $card_names[1] ) ) {
+			unset( $card_names[0] );
+			$last_name = implode( ' ', $card_names );
+		} else {
+
+			$last_name = $purchase_data['user_info']['last_name'];
+
+		}
+
 
 		$transaction->amount 		= $purchase_data['price'];
 		$transaction->card_num 		= strip_tags( trim( $card_info['card_number'] ) );
@@ -65,8 +76,8 @@ function edda_process_payment($purchase_data) {
 		$transaction->exp_date 		= strip_tags( trim( $card_info['card_exp_month'] ) ) . '/' . strip_tags( trim( $card_info['card_exp_year'] ) );
 
 		$transaction->description 	= edd_get_purchase_summary( $purchase_data );
-        $transaction->first_name 	= $purchase_data['user_info']['first_name'];
-        $transaction->last_name 	= $purchase_data['user_info']['last_name'];
+        $transaction->first_name 	= $first_name;
+        $transaction->last_name 	= $last_name;
 
         $transaction->address 		= $card_info['card_address'] . ' ' . $card_info['card_address_2'];
         $transaction->city 			= $card_info['card_city'];
