@@ -46,9 +46,9 @@ function edda_process_payment($purchase_data) {
 	}
 
 	$errors = edd_get_errors();
-	if ( ! $errors) {
+	if ( ! $errors ) {
 
-		require_once(dirname(__FILE__) . '/includes/anet_php_sdk/AuthorizeNet.php');
+		require_once( dirname( __FILE__ ) . '/includes/anet_php_sdk/AuthorizeNet.php' );
 
 		$transaction = new AuthorizeNetAIM( edd_get_option( 'edda_api_login' ), edd_get_option( 'edd_transaction_key' ) );
 		if(edd_is_test_mode()) {
@@ -101,8 +101,8 @@ function edda_process_payment($purchase_data) {
 					edd_update_payment_status( $payment, 'publish' );
 					edd_send_to_success_page();
 				} else {
-					edd_set_error( 'authorize_error', __( 'Error: your payment could not be recorded. Please try again', 'edda'));
-					edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
+					edd_set_error( 'authorize_error', __( 'Error: your payment could not be recorded. Please try again', 'edda' ) );
+					edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
 				}
 			} else {
 
