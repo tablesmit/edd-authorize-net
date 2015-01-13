@@ -50,7 +50,7 @@ function edda_process_payment($purchase_data) {
 
 		require_once(dirname(__FILE__) . '/includes/anet_php_sdk/AuthorizeNet.php');
 
-		$transaction = new AuthorizeNetAIM($edd_options['edda_api_login'], $edd_options['edd_transaction_key']);
+		$transaction = new AuthorizeNetAIM( edd_get_option( 'edda_api_login' ), edd_get_option( 'edd_transaction_key' ) );
 		if(edd_is_test_mode()) {
 			$transaction->setSandbox(true);
 		} else {
