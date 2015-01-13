@@ -10,7 +10,7 @@ Contributors: mordauk
 */
 
 
-if(!defined('EDDA_PLUGIN_DIR')) {
+if ( ! defined('EDDA_PLUGIN_DIR')) {
 	define('EDDA_PLUGIN_DIR', dirname(__FILE__));
 }
 
@@ -21,7 +21,7 @@ if( class_exists( 'EDD_License' ) && is_admin() ) {
 // registers the gateway
 function edda_register_authorize_gateway($gateways) {
 	// Format: ID => Name
-	$gateways['authorize'] = array('admin_label' => __('Authorize.net', 'edda'), 'checkout_label' => __('Credit Card', 'edda'));
+	$gateways['authorize'] = array('admin_label' => __( 'Authorize.net', 'edda'), 'checkout_label' => __( 'Credit Card', 'edda'));
 	return $gateways;
 }
 add_filter('edd_payment_gateways', 'edda_register_authorize_gateway');
@@ -29,24 +29,24 @@ add_filter('edd_payment_gateways', 'edda_register_authorize_gateway');
 function edda_process_payment($purchase_data) {
 	global $edd_options;
 
-	if(!isset($_POST['card_number']) || $_POST['card_number'] == '') {
-		edd_set_error('empty_card', __('You must enter a card number', 'edd'));
+	if ( ! isset( $_POST['card_number'] ) || $_POST['card_number'] == '' ) {
+		edd_set_error( 'empty_card', __( 'You must enter a card number', 'edd'));
 	}
-	if(!isset($_POST['card_name']) || $_POST['card_name'] == '') {
-		edd_set_error('empty_card_name', __('You must enter the name on your card', 'edd'));
+	if ( ! isset( $_POST['card_name'] ) || $_POST['card_name'] == '' ) {
+		edd_set_error( 'empty_card_name', __( 'You must enter the name on your card', 'edd'));
 	}
-	if(!isset($_POST['card_exp_month']) || $_POST['card_exp_month'] == '') {
-		edd_set_error('empty_month', __('You must enter an expiration month', 'edd'));
+	if ( ! isset( $_POST['card_exp_month'] ) || $_POST['card_exp_month'] == '' ) {
+		edd_set_error( 'empty_month', __( 'You must enter an expiration month', 'edd'));
 	}
-	if(!isset($_POST['card_exp_year']) || $_POST['card_exp_year'] == '') {
-		edd_set_error('empty_year', __('You must enter an expiration year', 'edd'));
+	if ( ! isset( $_POST['card_exp_year'] ) || $_POST['card_exp_year'] == '' ) {
+		edd_set_error( 'empty_year', __( 'You must enter an expiration year', 'edd'));
 	}
-	if(!isset($_POST['card_cvc']) || $_POST['card_cvc'] == '' || strlen($_POST['card_cvc']) < 3) {
-		edd_set_error('empty_cvc', __('You must enter a valid CVC', 'edd'));
+	if ( ! isset( $_POST['card_cvc'] ) || $_POST['card_cvc'] == '' || strlen( $_POST['card_cvc'] ) < 3 ) {
+		edd_set_error( 'empty_cvc', __( 'You must enter a valid CVC', 'edd' ) );
 	}
 
 	$errors = edd_get_errors();
-	if(!$errors) {
+	if ( ! $errors) {
 
 		require_once(dirname(__FILE__) . '/includes/anet_php_sdk/AuthorizeNet.php');
 
@@ -101,7 +101,7 @@ function edda_process_payment($purchase_data) {
 					edd_update_payment_status( $payment, 'publish' );
 					edd_send_to_success_page();
 				} else {
-					edd_set_error('authorize_error', __('Error: your payment could not be recorded. Please try again', 'edda'));
+					edd_set_error( 'authorize_error', __( 'Error: your payment could not be recorded. Please try again', 'edda'));
 					edd_send_back_to_checkout('?payment-mode=' . $purchase_data['post_data']['edd-gateway']);
 				}
 			} else {
@@ -147,20 +147,20 @@ function edda_add_settings($settings) {
   $edda_settings = array(
 		array(
 			'id' => 'edda_settings',
-			'name' => '<strong>' . __('Authorize.net Gateway Settings', 'edda') . '</strong>',
-			'desc' => __('Configure your authorize.net Gateway Settings', 'edda'),
+			'name' => '<strong>' . __( 'Authorize.net Gateway Settings', 'edda') . '</strong>',
+			'desc' => __( 'Configure your authorize.net Gateway Settings', 'edda'),
 			'type' => 'header'
 		),
 		array(
 			'id' => 'edda_api_login',
-			'name' => __('API Login ID', 'edda'),
-			'desc' => __('Enter your authorize.net API login ID', 'edda'),
+			'name' => __( 'API Login ID', 'edda'),
+			'desc' => __( 'Enter your authorize.net API login ID', 'edda'),
 			'type' => 'text'
 		),
 		array(
 			'id' => 'edd_transaction_key',
-			'name' => __('Transaction Key', 'edda'),
-			'desc' => __('Enter your authorize.net transaction key', 'edda'),
+			'name' => __( 'Transaction Key', 'edda'),
+			'desc' => __( 'Enter your authorize.net transaction key', 'edda'),
 			'type' => 'text'
 		)
 	);
